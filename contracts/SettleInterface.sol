@@ -8,7 +8,7 @@ interface SettleInterface {
     // function getPoolToken() external view returns (address[] memory);
     // function getDebtToken() external view returns (address[] memory);
     
-    // function getWalletSettle(address account) external view returns (uint256);
+    function getWalletSettle(address account) external view returns (uint256);
     // function getSavingsSettle(address account) external view returns (uint256);
     // function getPoolSettle(address account) external view returns (uint256);
     // function getDebtSettle(address account) external view returns (uint256);

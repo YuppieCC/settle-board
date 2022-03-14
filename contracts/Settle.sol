@@ -1,8 +1,12 @@
 pragma solidity ^0.5.16;
 
 import "./SettleInterface.sol";
+import "./interfaces/IERC20.sol"; 
+import "./interfaces/SafeMath.sol";
 
 contract Settle is SettleInterface {
+    using SafeMath for uint;
+
     address public owner;
     address public currency;
     address[] public walletToken;
@@ -18,6 +22,17 @@ contract Settle is SettleInterface {
 
     function getWalletToken() external view returns (address[] memory) {
         return walletToken;
+    }
+
+    function getWalletSettle(address account) external view returns (uint) {
+        uint result;
+        uint len = walletToken.length;
+        for (uint i = 0; i < len; i++) {
+            IERC20 wallet_token = IERC20(walletToken[i]);
+            uint _balance = wallet_token.balanceOf(account);
+            result = result.add(_balance);
+        }
+        return result;
     }
 
     function addWalletToken(address _token) external returns (bool) {
