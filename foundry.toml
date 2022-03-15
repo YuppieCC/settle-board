@@ -1,0 +1,9 @@
+[default]
+src = 'src'
+out = 'out'
+libs = ['lib']
+remappings = ['ds-test/=lib/ds-test/src/',]
+# alchemyapi-polygon-mainnet: https://polygon-mainnet.g.alchemy.com/v2/GwOvmeLwZJhoSDlPexaMeHx7YW1NhcD2
+# alchemyapi-polygon-mumbai: https://polygon-mumbai.g.alchemy.com/v2/gfbACZ4KtqzTnf21XSqA7HuiTInqcNKc
+
+# See more config options https://github.com/gakonst/foundry/tree/master/config
