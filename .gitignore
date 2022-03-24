@@ -1,3 +1,6 @@
+cache/
+out/
+
 allFiredEvents
 .build-temp
 build
@@ -42,6 +45,8 @@ junit.xml
 .saddle_history
 node_modules_tmp
 
+lib/
 artifacts
 .secret
 .artifacts
+.lib

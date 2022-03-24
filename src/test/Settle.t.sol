@@ -2,8 +2,8 @@
 pragma solidity 0.8.10;
 
 import "ds-test/test.sol";
-import "../contracts/interfaces/IERC20.sol"; 
-import "../contracts/Settle.sol";
+import "../interfaces/IERC20.sol"; 
+import "../Settle.sol";
 
 contract SettleTest is DSTest {
     Settle settle;
@@ -33,7 +33,7 @@ contract SettleTest is DSTest {
 
     function testGetWalletSettle() public {
         settle.addWalletToken(chip);
-        uint chipBalance = IERC20(ship).balanceOf(sam);
+        uint chipBalance = IERC20(chip).balanceOf(sam);
         assertEq(settle.getWalletSettle(sam), chipBalance);
     }
 }

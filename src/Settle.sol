@@ -1,6 +1,7 @@
-pragma solidity ^0.5.16;
+// SPDX-License-Identifier: UNLICENSED
+pragma solidity 0.8.10;
 
-import "./SettleInterface.sol";
+import "./interfaces/SettleInterface.sol";
 import "./interfaces/IERC20.sol"; 
 import "./interfaces/SafeMath.sol";
 
@@ -11,7 +12,7 @@ contract Settle is SettleInterface {
     address public currency;
     address[] public walletToken;
 
-    constructor(address _currency) public {
+    constructor(address _currency) {
         owner = msg.sender;
         currency = _currency;
     }
