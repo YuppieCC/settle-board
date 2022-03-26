@@ -21,7 +21,7 @@ contract SettleTest is DSTest {
     function testExample() public {
         assertTrue(true);
     }
-
+    
     function testSettleOwner() public {
         assertEq(settle.owner(), address(this));
     }
@@ -39,10 +39,22 @@ contract SettleTest is DSTest {
         assertEq(settle.getTokenPriceConfig(chip), mumbaiBTCUSD);
     }
 
+    function testIsTokenExists() public {
+        assertTrue(settle.addWalletToken(chip, mumbaiBTCUSD));
+        assertTrue(settle.isTokenExists(chip));
+        assertTrue(!settle.isTokenExists(sam));
+    }
+
     function testGetWalletSettle() public {
         settle.addWalletToken(chip, mumbaiBTCUSD);
         uint result = settle.getWalletSettle(sam);
         emit log_uint(result);
         assertGt(result, 0);
+    }
+
+    function testDelWalletToken() public {
+        assertTrue(settle.addWalletToken(chip, mumbaiBTCUSD));
+        assertTrue(settle.delWalletToken(chip));
+        assertTrue(!settle.isTokenExists(chip));
     }
 }

@@ -11,6 +11,7 @@ interface SettleInterface {
 
     function getTokenPriceConfig(address _token) external view returns (address);
     function getWalletSettle(address account) external view returns (uint256);
+    function isTokenExists(address _token) external view returns (bool);
     // function getSavingsSettle(address account) external view returns (uint256);
     // function getPoolSettle(address account) external view returns (uint256);
     // function getDebtSettle(address account) external view returns (uint256);
@@ -18,12 +19,14 @@ interface SettleInterface {
 
     // actions
     function addWalletToken(address _token, address _priceLink) external returns (bool);
+    function delWalletToken(address _token) external returns (bool);
     // function addSavingsToken() external;
     // function addPoolToken() external;
     // function addDebtToken() external;
 
     // event
     event AddWalletToken(address _sender, address _token, address _priceLink);
+    event DelWalletToken(address _sender, address _token);
     // event addSavingsToken(address sender, address Token);
     // event addPoolToken(address sender, address Token);
     // event addDebtToken(address sender, address Token);
