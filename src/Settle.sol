@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.8.10;
 
+import "ds-test/console.sol";
 import "./SettleInterface.sol";
 import "./interfaces/AggregatorV3Interface.sol";
 import "./interfaces/IERC20.sol"; 
@@ -12,11 +13,22 @@ contract Settle is SettleInterface {
     address public owner;
     address public currency;
     address[] public walletToken;
-    mapping(address => address) public tokenPriceConfig;
+    address[] public savingsToken;
+    struct Config {
+        address oracleLink;
+        int8 numSigned;
+    }
+
+    mapping(address => Config) public tokenSettleConfig;
 
     constructor(address _currency) {
         owner = msg.sender;
         currency = _currency;
+    }
+
+     function isTokenExists(address _token) public view returns (bool) {
+        (address _oracleLink,) = getTokenSettleConfig(_token);
+        return _oracleLink != address(0);
     }
 
     function getCurrency() external view returns (address) {
@@ -27,40 +39,43 @@ contract Settle is SettleInterface {
         return walletToken;
     }
 
-    function getTokenPriceConfig(address _token) external view returns (address) {
-        return tokenPriceConfig[_token];
+    function getTokenSettleConfig(address _token) public view returns (address, int8) {
+        Config memory config =  tokenSettleConfig[_token];
+        return (config.oracleLink, config.numSigned);
     }
 
-    function getWalletSettle(address account) external view returns (uint) {
-        uint result;
+    function getWalletSettle(address account) external view returns (uint, uint) {
+        uint value;
+        uint debt;
         uint len = walletToken.length;
         for (uint i = 0; i < len; i++) {
+            (address oracleLink, int8 numSigned) = getTokenSettleConfig(walletToken[i]);
+            (,int256 answer,,,) = AggregatorV3Interface(oracleLink).latestRoundData();
+            if (answer == 0) {
+                continue;
+            }
+
             IERC20 wallet_token = IERC20(walletToken[i]);
             uint _balance = wallet_token.balanceOf(account);
-            (,int256 answer,,,) = AggregatorV3Interface(tokenPriceConfig[walletToken[i]]).latestRoundData();
-            uint _price = uint(answer);
-            uint _settle = _balance.mul(_price);
-            result = result.add(_settle);
-        }
-        return result;
-    }
-
-    function isTokenExists(address _token) public view returns (bool) {
-        for (uint i = 0; i < walletToken.length; i++) {
-            if (walletToken[i] == _token) {
-                return true;
+            uint _intPrice = uint(answer);
+            uint _settle = _balance * _intPrice;
+            
+            if (numSigned == 1) {
+                value = value.add(_settle);
+            } else {
+                debt = debt.add(_settle);
             }
         }
-        return false;
+        return (value, debt);
     }
-
-    function addWalletToken(address _token, address _priceLink) external returns (bool) {
+   
+    function addWalletToken(address _token, address _priceLink, int8 _numSigned) external returns (bool) {
         require(msg.sender == owner, "permission denied");
         require(isTokenExists(_token) == false, "token already exists");
 
         walletToken.push(_token);
-        tokenPriceConfig[_token] = _priceLink;
-        emit AddWalletToken(msg.sender, _token, _priceLink);
+        tokenSettleConfig[_token] = Config({oracleLink: _priceLink, numSigned: _numSigned});
+        emit AddWalletToken(msg.sender, _token, _priceLink, _numSigned);
         return true;
     }
 
@@ -74,7 +89,7 @@ contract Settle is SettleInterface {
                 delete walletToken[i];
             }
         }
-        delete tokenPriceConfig[_token];
+        delete tokenSettleConfig[_token];
         emit DelWalletToken(msg.sender, _token);
         return true;
     }
