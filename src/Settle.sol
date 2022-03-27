@@ -13,7 +13,6 @@ contract Settle is SettleInterface {
     address public owner;
     address public currency;
     address[] public walletToken;
-    address[] public savingsToken;
     struct Config {
         address oracleLink;
         int8 numSigned;
