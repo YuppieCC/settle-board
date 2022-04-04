@@ -6,10 +6,12 @@ import "./SettleInterface.sol";
 import "./interfaces/AggregatorV3Interface.sol";
 import "./interfaces/IERC20.sol"; 
 import "./interfaces/SafeMath.sol";
+import {ExponentialNoError}  from "./ExponentialNoError.sol";
 
-contract Settle is SettleInterface {
+contract Settle is SettleInterface, ExponentialNoError {
     using SafeMath for uint;
 
+    uint public decimals = 18;
     address public owner;
     address public currency;
     address[] public walletToken;
@@ -43,6 +45,15 @@ contract Settle is SettleInterface {
         return (config.oracleLink, config.numSigned);
     }
 
+    function countDecimals(uint balanceDecimals, uint priceDecimals) public view returns (uint) {
+        uint _valueDecimals = add_(balanceDecimals, priceDecimals);
+        if (_valueDecimals > decimals) {
+            return sub_(_valueDecimals, decimals);
+        } else {
+            return sub_(decimals, _valueDecimals);
+        }
+    }
+
     function getWalletSettle(address account) external view returns (uint, uint) {
         uint value;
         uint debt;
@@ -55,14 +66,16 @@ contract Settle is SettleInterface {
             }
 
             IERC20 wallet_token = IERC20(walletToken[i]);
-            uint _balance = wallet_token.balanceOf(account);
-            uint _intPrice = uint(answer);
-            uint _settle = _balance * _intPrice;
-            
+            uint balance = wallet_token.balanceOf(account);
+            uint settleDecimals = countDecimals(
+                wallet_token.decimals(), AggregatorV3Interface(oracleLink).decimals()
+            );
+
+            uint _settle = div_(mul_(balance, uint(answer)), 10 ** settleDecimals);
             if (numSigned == 1) {
-                value = value.add(_settle);
+                value = add_(_settle, value);
             } else {
-                debt = debt.add(_settle);
+                debt = add_(_settle, debt);
             }
         }
         return (value, debt);
