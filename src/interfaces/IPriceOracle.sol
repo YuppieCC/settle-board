@@ -1,6 +1,6 @@
 pragma solidity >=0.6.0;
 
-interface AggregatorV3Interface {
+interface IPriceOracle {
 
   function decimals() external view returns (uint8);
   function description() external view returns (string memory);

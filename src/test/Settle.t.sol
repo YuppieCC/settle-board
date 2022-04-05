@@ -4,9 +4,9 @@ pragma solidity 0.8.10;
 
 import "ds-test/console.sol";
 import "ds-test/test.sol";
-import "../interfaces/IERC20.sol";
-import "../interfaces/AggregatorV3Interface.sol";
-import "../Settle.sol";
+import {IERC20} from "../interfaces/IERC20.sol";
+import {IPriceOracle} from "../interfaces/IPriceOracle.sol";
+import {Settle} from "../Settle.sol";
 import {ExponentialNoError}  from "../ExponentialNoError.sol";
 
 contract SettleTest is ExponentialNoError, DSTest {

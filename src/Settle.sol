@@ -2,10 +2,10 @@
 pragma solidity 0.8.10;
 
 import "ds-test/console.sol";
-import "./SettleInterface.sol";
-import "./interfaces/AggregatorV3Interface.sol";
-import "./interfaces/IERC20.sol"; 
-import "./interfaces/SafeMath.sol";
+import {SettleInterface} from "./SettleInterface.sol";
+import {IPriceOracle} from "./interfaces/IPriceOracle.sol";
+import {IERC20} from "./interfaces/IERC20.sol"; 
+import {SafeMath} from "./interfaces/SafeMath.sol";
 import {ExponentialNoError}  from "./ExponentialNoError.sol";
 
 contract Settle is SettleInterface, ExponentialNoError {
@@ -60,7 +60,7 @@ contract Settle is SettleInterface, ExponentialNoError {
         uint len = walletToken.length;
         for (uint i = 0; i < len; i++) {
             (address oracleLink, int8 numSigned) = getTokenSettleConfig(walletToken[i]);
-            (,int256 answer,,,) = AggregatorV3Interface(oracleLink).latestRoundData();
+            (,int256 answer,,,) = IPriceOracle(oracleLink).latestRoundData();
             if (answer == 0) {
                 continue;
             }
@@ -68,7 +68,7 @@ contract Settle is SettleInterface, ExponentialNoError {
             IERC20 wallet_token = IERC20(walletToken[i]);
             uint balance = wallet_token.balanceOf(account);
             uint settleDecimals = countDecimals(
-                wallet_token.decimals(), AggregatorV3Interface(oracleLink).decimals()
+                wallet_token.decimals(), IPriceOracle(oracleLink).decimals()
             );
 
             uint _settle = div_(mul_(balance, uint(answer)), 10 ** settleDecimals);
