@@ -11,7 +11,20 @@ import {ExponentialNoError}  from "./ExponentialNoError.sol";
 
 contract QuickswapLPTokenPrice is IQuickswapLPTokenPrice, ExponentialNoError{
     uint8 public decimals = 18;
-    mapping(address => address) public lpOraclePriceConfig;
+  
+    address public lpToken;
+    address public token0;
+    address public token1;
+    address public token0Oracle;
+    address public token1Oracle;
+
+    constructor(address _lpToken, address _token0, address _token1, address _token0Oracle, address _token1Oracle) {
+        lpToken = _lpToken;        
+        token0 = _token0;
+        token1 = _token1;
+        token0Oracle = _token0Oracle;
+        token1Oracle = _token1Oracle;   
+    }
 
     function countDecimals(uint balanceDecimals, uint priceDecimals) public view returns (int8, uint) {
         uint _decimals = uint(decimals);
@@ -29,51 +42,60 @@ contract QuickswapLPTokenPrice is IQuickswapLPTokenPrice, ExponentialNoError{
         uint amountDeciamls, 
         uint priceDecimals
     ) public view returns (uint) {
-
-        uint _decimals = uint(decimals);
         uint _settle = mul_(tokenAmount, tokenPrice);
         uint _valueDecimals = add_(amountDeciamls, priceDecimals);
 
-        if (_valueDecimals > _decimals) {
-            uint diffDecimals = sub_(_valueDecimals, _decimals);
+        if (_valueDecimals > decimals) {
+            uint diffDecimals = sub_(_valueDecimals, decimals);
             return div_(_settle, 10 ** diffDecimals);
         } else {
-            uint diffDecimals = sub_(_decimals, _valueDecimals);
+            uint diffDecimals = sub_(decimals, _valueDecimals);
             return mul_(_settle, 10 ** diffDecimals);
         }
     }
 
-    function setLpOraclePriceConfig(address _token, address _oracleLink) external {
-        lpOraclePriceConfig[_token] = _oracleLink;
-    }
+    // function setLpOraclePriceConfig(
+    //     address lpToken, 
+    //     address token0, 
+    //     address token1, 
+    //     address token0Oracle, 
+    //     address token1Oracle
+    // ) external {
+    //     lpOraclePriceConfig[LPConfig] = LPConfig({
+    //         token0: token0,
+    //         token1: token1,
+    //         token0Oracle: token0Oracle,
+    //         token1Oracle: token1Oracle
+    //     });
+    // }
     
-    function latestRoundData(address lpToken) external view returns (uint) {
+    function latestRoundData() external view returns (
+        uint80 roundId,
+        int256 answer,
+        uint256 startedAt,
+        uint256 updatedAt,
+        uint80 answeredInRound
+    ) {
         (uint reserve0, uint reserve1, ) = IUniswapV2Pair(lpToken).getReserves();
         uint totalSupply = IUniswapV2Pair(lpToken).totalSupply();
-        address token0 = IUniswapV2Pair(lpToken).token0();
-        address token1 = IUniswapV2Pair(lpToken).token1();
-
-        address token0PriceLink = lpOraclePriceConfig[token0];
-        address token1PriceLink = lpOraclePriceConfig[token1];
-        (,int256 answer0,,,) = IPriceOracle(token0PriceLink).latestRoundData();
-        (,int256 answer1,,,) = IPriceOracle(token1PriceLink).latestRoundData();
+        (,int256 answer0,,,) = IPriceOracle(token0Oracle).latestRoundData();
+        (,int256 answer1,,,) = IPriceOracle(token1Oracle).latestRoundData();
 
         uint settle0 = getTokenSettle(
             reserve0,
              uint(answer0),
              IERC20(token0).decimals(),
-             IPriceOracle(token0PriceLink).decimals()
+             IPriceOracle(token0Oracle).decimals()
         );
         uint settle1 = getTokenSettle(
             reserve1,
             uint(answer1),
             IERC20(token1).decimals(),
-            IPriceOracle(token1PriceLink).decimals()
+            IPriceOracle(token1Oracle).decimals()
         );
       
         uint settle = add_(settle0, settle1);
-        uint price = div_(settle, totalSupply);
-
-        return mul_(price, 10 ** decimals);
+        uint price = mul_(div_(settle, totalSupply), 10 ** decimals);
+        return (1, int(price), 1, 1, 1);
     }
 }

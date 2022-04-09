@@ -7,21 +7,41 @@ import "ds-test/test.sol";
 import {IERC20} from "../interfaces/IERC20.sol";
 import {IPriceOracle} from "../interfaces/IPriceOracle.sol";
 import {Settle} from "../Settle.sol";
+import {QuickswapLPTokenPrice} from "../QuickswapLPTokenPrice.sol";
 import {ExponentialNoError}  from "../ExponentialNoError.sol";
 
 contract SettleTest is ExponentialNoError, DSTest {
     Settle settle;
+    QuickswapLPTokenPrice qsToken;
     address public chip = 0xfd29982Fa0b7d3eDcaE9B0c49D350C07c7cEC5c1;
     address public currency = 0xe19B95fB3bDE006E436c7C83DCb8018D55671490;
     address public sam = 0x16EAF3c5201F57A9cc0B35688269c082e215627c;
+    address public myself = 0x6F82E3cc2a3d6b7A6d98e7941BCadd7f52919D53;
+    address public SYTEST3 = 0xE3052163A213bD13fDB88dCfb00363d808d5DEf1;
+
     int8 public positiveNumSigned = 1;
     int8 public negativeNumSigned = -1;
 
     address public mumbaiBTCUSD = 0x007A22900a3B98143368Bd5906f8E17e9867581b;
     address public mumbaiUSDTUSD = 0x572dDec9087154dC5dfBB1546Bb62713147e0Ab0;
+
+    // address public REWARD_WMATICUSDT = 0xc0eb5d1316b835F4B584B59f922d9c87cA5053E5;
+    // address public WMATICUSDT = 0x604229c960e5CACF2aaEAc8Be68Ac07BA9dF81c3;
+    address public WMATICUSDC = 0x6e7a5FAFcec6BB1e78bAE2A1F0B612012BF14827;
+    address public WATICUSD = 0xAB594600376Ec9fD91F8e885dADF0CE036862dE0;
+    address public USDTUSD = 0x0A6513e40db6EB1b165753AD52E80663aeA50545;
+    address public WMATIC = 0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270;
+    address public USDT =  0xc2132D05D31c914a87C6611C10748AEb04B58e8F;
     
     function setUp() public {
         settle = new Settle(currency);
+        qsToken = new QuickswapLPTokenPrice(
+            WMATICUSDC,
+            WMATIC,
+            USDT,
+            WATICUSD,
+            USDTUSD
+        );
     }
 
     function testExample() public {
@@ -54,13 +74,14 @@ contract SettleTest is ExponentialNoError, DSTest {
     }
 
     function testGetWalletSettle() public {
-        settle.addWalletToken(chip, mumbaiUSDTUSD, positiveNumSigned);
-        settle.addWalletToken(currency, mumbaiBTCUSD, negativeNumSigned);
-        (uint value, uint debt) = settle.getWalletSettle(sam);
+        // settle.addWalletToken(chip, mumbaiUSDTUSD, positiveNumSigned);
+        // settle.addWalletToken(currency, mumbaiBTCUSD, negativeNumSigned);
+        settle.addWalletToken(WMATICUSDC, address(qsToken), positiveNumSigned);
+        (uint value, uint debt) = settle.getWalletSettle(myself);
         emit log_uint(value);
         emit log_uint(debt);
-        assertGt(value, 0);
-        assertGt(debt, 0);
+        // assertGt(value, 0);
+        // assertGt(debt, 0);
     }
 
     function testDelWalletToken() public {

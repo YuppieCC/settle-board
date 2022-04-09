@@ -9,6 +9,12 @@ interface IQuickswapLPTokenPrice {
         uint priceDecimals
     ) external view returns (uint);
 
-    function setLpOraclePriceConfig(address _token, address _oracleLink) external;
-    function latestRoundData(address lpToken) external returns (uint);
+    // function setLpOraclePriceConfig(address _token, address _oracleLink) external;
+    function latestRoundData() external returns (
+        uint80 roundId,
+        int256 answer,
+        uint256 startedAt,
+        uint256 updatedAt,
+        uint80 answeredInRound
+    );
 }

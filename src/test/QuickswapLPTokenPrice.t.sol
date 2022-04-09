@@ -17,14 +17,18 @@ contract QuickswapLPTokenPriceTest is DSTest {
     address public USDT =  0xc2132D05D31c914a87C6611C10748AEb04B58e8F;
 
     function setUp() public {
-        qsToken = new QuickswapLPTokenPrice();
-        qsToken.setLpOraclePriceConfig(WMATIC, WATICUSD);
-        qsToken.setLpOraclePriceConfig(USDT, USDTUSD);
+        qsToken = new QuickswapLPTokenPrice(
+            WMATICUSDT,
+            WMATIC,
+            USDT,
+            WATICUSD,
+            USDTUSD
+        );
     }
 
     function testLatestRoundData() public {
-        uint price = qsToken.latestRoundData(WMATICUSDT);
-        emit log_uint(price);
-        assertGt(price, 0);   
+        (,int256 answer,,,) = qsToken.latestRoundData();
+        emit log_uint(uint(answer));
+        assertGt(uint(answer), 0);   
     }
 }
