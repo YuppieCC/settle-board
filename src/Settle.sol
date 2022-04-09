@@ -11,7 +11,7 @@ import {ExponentialNoError}  from "./ExponentialNoError.sol";
 contract Settle is SettleInterface, ExponentialNoError {
     using SafeMath for uint;
 
-    uint public decimals = 18;
+    uint8 public decimals = 18;
     address public owner;
     address public currency;
     address[] public walletToken;
@@ -45,12 +45,21 @@ contract Settle is SettleInterface, ExponentialNoError {
         return (config.oracleLink, config.numSigned);
     }
 
-    function countDecimals(uint balanceDecimals, uint priceDecimals) public view returns (uint) {
-        uint _valueDecimals = add_(balanceDecimals, priceDecimals);
+    function getTokenSettle(
+        uint tokenAmount, 
+        uint tokenPrice, 
+        uint amountDeciamls, 
+        uint priceDecimals
+    ) public view returns (uint) {
+        uint _settle = mul_(tokenAmount, tokenPrice);
+        uint _valueDecimals = add_(amountDeciamls, priceDecimals);
+
         if (_valueDecimals > decimals) {
-            return sub_(_valueDecimals, decimals);
+            uint diffDecimals = sub_(_valueDecimals, decimals);
+            return div_(_settle, 10 ** diffDecimals);
         } else {
-            return sub_(decimals, _valueDecimals);
+            uint diffDecimals = sub_(decimals, _valueDecimals);
+            return mul_(_settle, 10 ** diffDecimals);
         }
     }
 
@@ -67,11 +76,12 @@ contract Settle is SettleInterface, ExponentialNoError {
 
             IERC20 wallet_token = IERC20(walletToken[i]);
             uint balance = wallet_token.balanceOf(account);
-            uint settleDecimals = countDecimals(
-                wallet_token.decimals(), IPriceOracle(oracleLink).decimals()
+            uint _settle = getTokenSettle(
+                balance, 
+                uint(answer), 
+                wallet_token.decimals(),  
+                IPriceOracle(oracleLink).decimals()
             );
-
-            uint _settle = div_(mul_(balance, uint(answer)), 10 ** settleDecimals);
             if (numSigned == 1) {
                 value = add_(_settle, value);
             } else {

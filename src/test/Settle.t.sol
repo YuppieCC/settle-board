@@ -54,7 +54,7 @@ contract SettleTest is ExponentialNoError, DSTest {
     }
 
     function testGetWalletSettle() public {
-        settle.addWalletToken(chip, mumbaiBTCUSD, positiveNumSigned);
+        settle.addWalletToken(chip, mumbaiUSDTUSD, positiveNumSigned);
         settle.addWalletToken(currency, mumbaiBTCUSD, negativeNumSigned);
         (uint value, uint debt) = settle.getWalletSettle(sam);
         emit log_uint(value);
