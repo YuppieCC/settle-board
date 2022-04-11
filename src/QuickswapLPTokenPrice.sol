@@ -53,21 +53,6 @@ contract QuickswapLPTokenPrice is IQuickswapLPTokenPrice, ExponentialNoError{
             return mul_(_settle, 10 ** diffDecimals);
         }
     }
-
-    // function setLpOraclePriceConfig(
-    //     address lpToken, 
-    //     address token0, 
-    //     address token1, 
-    //     address token0Oracle, 
-    //     address token1Oracle
-    // ) external {
-    //     lpOraclePriceConfig[LPConfig] = LPConfig({
-    //         token0: token0,
-    //         token1: token1,
-    //         token0Oracle: token0Oracle,
-    //         token1Oracle: token1Oracle
-    //     });
-    // }
     
     function latestRoundData() external view returns (
         uint80 roundId,
