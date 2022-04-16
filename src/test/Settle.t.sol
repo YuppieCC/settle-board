@@ -91,7 +91,7 @@ contract SettleTest is ExponentialNoError, DSTest {
     }
 
     function testExponential() public {
-        uint dec = IERC20(chip).balanceOf(sam);
+        uint dec = IERC20(WMATIC).balanceOf(sam);
         Exp memory _res = Exp({mantissa: dec});
         console.log("exp", _res.mantissa);
 

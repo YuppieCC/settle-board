@@ -2,17 +2,17 @@
 pragma solidity 0.8.10;
 
 import "ds-test/console.sol";
+import {Ownable} from "./openzepplin/Ownable.sol";
 import {SettleInterface} from "./SettleInterface.sol";
 import {IPriceOracle} from "./interfaces/IPriceOracle.sol";
 import {IERC20} from "./interfaces/IERC20.sol"; 
-import {SafeMath} from "./interfaces/SafeMath.sol";
+import {SafeMath} from "./openzepplin/SafeMath.sol";
 import {ExponentialNoError}  from "./ExponentialNoError.sol";
 
-contract Settle is SettleInterface, ExponentialNoError {
+contract Settle is Ownable, SettleInterface, ExponentialNoError {
     using SafeMath for uint;
 
     uint8 public decimals = 18;
-    address public owner;
     address public currency;
     address[] public walletToken;
     struct Config {
@@ -23,7 +23,6 @@ contract Settle is SettleInterface, ExponentialNoError {
     mapping(address => Config) public tokenSettleConfig;
 
     constructor(address _currency) {
-        owner = msg.sender;
         currency = _currency;
     }
 
@@ -91,8 +90,7 @@ contract Settle is SettleInterface, ExponentialNoError {
         return (value, debt);
     }
    
-    function addWalletToken(address _token, address _priceLink, int8 _numSigned) external returns (bool) {
-        require(msg.sender == owner, "permission denied");
+    function addWalletToken(address _token, address _priceLink, int8 _numSigned) external onlyOwner returns (bool) {
         require(isTokenExists(_token) == false, "token already exists");
 
         walletToken.push(_token);
@@ -101,8 +99,7 @@ contract Settle is SettleInterface, ExponentialNoError {
         return true;
     }
 
-    function delWalletToken(address _token) external returns (bool) {
-        require(msg.sender == owner, "permission denied");
+    function delWalletToken(address _token) external onlyOwner returns (bool) {
         require(isTokenExists(_token), "token not found");
 
         uint len = walletToken.length;
