@@ -1,6 +1,7 @@
 cache/
 out/
 
+deploy
 allFiredEvents
 .build-temp
 build
