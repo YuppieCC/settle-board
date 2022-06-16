@@ -3,18 +3,17 @@ pragma solidity 0.8.10;
 
 import "ds-test/console.sol";
 import {Ownable} from "./openzepplin/Ownable.sol";
-import {SettleInterface} from "./SettleInterface.sol";
+import {ISettle} from "./interfaces/ISettle.sol";
 import {IPriceOracle} from "./interfaces/IPriceOracle.sol";
 import {IERC20} from "./interfaces/IERC20.sol"; 
 import {SafeMath} from "./openzepplin/SafeMath.sol";
-import {ExponentialNoError}  from "./ExponentialNoError.sol";
+import {BaseSettleMath} from "./BaseSettleMath.sol";
 
-contract Settle is Ownable, SettleInterface, ExponentialNoError {
+contract Settle is BaseSettleMath, Ownable {
     using SafeMath for uint;
 
-    uint8 public decimals = 18;
     address public currency;
-    address[] public walletToken;
+    address[] public settleToken;
     struct Config {
         address oracleLink;
         int8 numSigned;
@@ -35,8 +34,8 @@ contract Settle is Ownable, SettleInterface, ExponentialNoError {
         return currency;
     }
 
-    function getWalletToken() external view returns (address[] memory) {
-        return walletToken;
+    function getSettleToken() external view returns (address[] memory) {
+        return settleToken;
     }
 
     function getTokenSettleConfig(address _token) public view returns (address, int8) {
@@ -44,36 +43,18 @@ contract Settle is Ownable, SettleInterface, ExponentialNoError {
         return (config.oracleLink, config.numSigned);
     }
 
-    function getTokenSettle(
-        uint tokenAmount, 
-        uint tokenPrice, 
-        uint amountDeciamls, 
-        uint priceDecimals
-    ) public view returns (uint) {
-        uint _settle = mul_(tokenAmount, tokenPrice);
-        uint _valueDecimals = add_(amountDeciamls, priceDecimals);
-
-        if (_valueDecimals > decimals) {
-            uint diffDecimals = sub_(_valueDecimals, decimals);
-            return div_(_settle, 10 ** diffDecimals);
-        } else {
-            uint diffDecimals = sub_(decimals, _valueDecimals);
-            return mul_(_settle, 10 ** diffDecimals);
-        }
-    }
-
     function getWalletSettle(address account) external view returns (uint, uint) {
         uint value;
         uint debt;
-        uint len = walletToken.length;
+        uint len = settleToken.length;
         for (uint i = 0; i < len; i++) {
-            (address oracleLink, int8 numSigned) = getTokenSettleConfig(walletToken[i]);
+            (address oracleLink, int8 numSigned) = getTokenSettleConfig(settleToken[i]);
             (,int256 answer,,,) = IPriceOracle(oracleLink).latestRoundData();
             if (answer == 0) {
                 continue;
             }
 
-            IERC20 wallet_token = IERC20(walletToken[i]);
+            IERC20 wallet_token = IERC20(settleToken[i]);
             uint balance = wallet_token.balanceOf(account);
             uint _settle = getTokenSettle(
                 balance, 
@@ -81,36 +62,40 @@ contract Settle is Ownable, SettleInterface, ExponentialNoError {
                 wallet_token.decimals(),  
                 IPriceOracle(oracleLink).decimals()
             );
+            console.log("settle:", _settle);
             if (numSigned == 1) {
                 value = add_(_settle, value);
             } else {
                 debt = add_(_settle, debt);
             }
         }
+        console.log("getWalletSettle", value, debt);
         return (value, debt);
     }
    
-    function addWalletToken(address _token, address _priceLink, int8 _numSigned) external onlyOwner returns (bool) {
+    function addSettleToken(address _token, address _priceLink, int8 _numSigned) external onlyOwner returns (bool) {
         require(isTokenExists(_token) == false, "token already exists");
 
-        walletToken.push(_token);
+        settleToken.push(_token);
         tokenSettleConfig[_token] = Config({oracleLink: _priceLink, numSigned: _numSigned});
-        emit AddWalletToken(msg.sender, _token, _priceLink, _numSigned);
+        emit AddSettleToken(msg.sender, _token, _priceLink, _numSigned);
         return true;
     }
 
-    function delWalletToken(address _token) external onlyOwner returns (bool) {
+    function delSettleToken(address _token) external onlyOwner returns (bool) {
         require(isTokenExists(_token), "token not found");
 
-        uint len = walletToken.length;
+        uint len = settleToken.length;
         for (uint i = 0; i < len; i++) {
-            if (walletToken[i] == _token) {
-                delete walletToken[i];
+            if (settleToken[i] == _token) {
+                delete settleToken[i];
             }
         }
         delete tokenSettleConfig[_token];
-        emit DelWalletToken(msg.sender, _token);
+        emit DelSettleToken(msg.sender, _token);
         return true;
     }
 
+    event AddSettleToken(address indexed sender, address token, address priceLink, int8 numSigned);
+    event DelSettleToken(address indexed sender, address token);
 }

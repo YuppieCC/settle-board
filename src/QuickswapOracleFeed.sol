@@ -6,12 +6,10 @@ import {IQuickswapLPTokenPrice} from "./interfaces/IQuickswapLPTokenPrice.sol";
 import {IPriceOracle} from "./interfaces/IPriceOracle.sol";
 import {IUniswapV2Pair} from "./interfaces/IUniswapV2Pair.sol";
 import {IERC20} from "./interfaces/IERC20.sol";
-import {ExponentialNoError}  from "./ExponentialNoError.sol";
+import {ExponentialNoError}  from "./lib/ExponentialNoError.sol";
+import {BaseSettleMath} from "./BaseSettleMath.sol";
 
-
-contract QuickswapLPTokenPrice is IQuickswapLPTokenPrice, ExponentialNoError{
-    uint8 public decimals = 18;
-  
+contract QuickswapOracleFeed is BaseSettleMath {  
     address public lpToken;
     address public token0;
     address public token1;
@@ -24,34 +22,6 @@ contract QuickswapLPTokenPrice is IQuickswapLPTokenPrice, ExponentialNoError{
         token1 = _token1;
         token0Oracle = _token0Oracle;
         token1Oracle = _token1Oracle;   
-    }
-
-    function countDecimals(uint balanceDecimals, uint priceDecimals) public view returns (int8, uint) {
-        uint _decimals = uint(decimals);
-        uint _valueDecimals = add_(balanceDecimals, priceDecimals);
-        if (_valueDecimals > _decimals) {
-            return (1, sub_(_valueDecimals, _decimals));
-        } else {
-            return (-1, sub_(_decimals, _valueDecimals));
-        }
-    }
-
-    function getTokenSettle(
-        uint tokenAmount, 
-        uint tokenPrice, 
-        uint amountDeciamls, 
-        uint priceDecimals
-    ) public view returns (uint) {
-        uint _settle = mul_(tokenAmount, tokenPrice);
-        uint _valueDecimals = add_(amountDeciamls, priceDecimals);
-
-        if (_valueDecimals > decimals) {
-            uint diffDecimals = sub_(_valueDecimals, decimals);
-            return div_(_settle, 10 ** diffDecimals);
-        } else {
-            uint diffDecimals = sub_(decimals, _valueDecimals);
-            return mul_(_settle, 10 ** diffDecimals);
-        }
     }
     
     function latestRoundData() external view returns (
