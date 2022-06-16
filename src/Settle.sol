@@ -12,7 +12,7 @@ import {BaseSettleMath} from "./BaseSettleMath.sol";
 contract Settle is BaseSettleMath, Ownable {
     using SafeMath for uint;
 
-    address public currency;
+    // address public currency;
     address[] public settleToken;
     struct Config {
         address oracleLink;
@@ -21,17 +21,13 @@ contract Settle is BaseSettleMath, Ownable {
 
     mapping(address => Config) public tokenSettleConfig;
 
-    constructor(address _currency) {
-        currency = _currency;
-    }
+    // constructor(address _currency) {
+    //     currency = _currency;
+    // }
 
      function isTokenExists(address _token) public view returns (bool) {
         (address _oracleLink,) = getTokenSettleConfig(_token);
         return _oracleLink != address(0);
-    }
-
-    function getCurrency() external view returns (address) {
-        return currency;
     }
 
     function getSettleToken() external view returns (address[] memory) {

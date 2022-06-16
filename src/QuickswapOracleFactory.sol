@@ -4,6 +4,7 @@ pragma solidity 0.8.10;
 import {QuickswapOracleFeed} from "./QuickswapOracleFeed.sol";
 import {Ownable} from "./openzepplin/Ownable.sol";
 
+
 contract QuickswapOracleFactory is Ownable {
     struct OracleInfo {
         string OracleName;

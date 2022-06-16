@@ -2,12 +2,12 @@
 pragma solidity 0.8.10;
 
 import "ds-test/console.sol";
-import {IQuickswapLPTokenPrice} from "./interfaces/IQuickswapLPTokenPrice.sol";
 import {IPriceOracle} from "./interfaces/IPriceOracle.sol";
 import {IUniswapV2Pair} from "./interfaces/IUniswapV2Pair.sol";
 import {IERC20} from "./interfaces/IERC20.sol";
 import {ExponentialNoError}  from "./lib/ExponentialNoError.sol";
 import {BaseSettleMath} from "./BaseSettleMath.sol";
+
 
 contract QuickswapOracleFeed is BaseSettleMath {  
     address public lpToken;
