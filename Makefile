@@ -34,6 +34,7 @@ verify-check:
 	forge verify-check --chain-id ${CHAIN_ID} $(GUID) ${ETHERSCAN_KEY}
 
 # deploy contracts and verify them
+# make scripting ETH_GAS_PRICE=${GAS_PRICE}
 scripting:
 	forge script script/Deploy.s.sol:DeployScript --rpc-url ${NETWORK_RPC_URL} \
 		--broadcast \

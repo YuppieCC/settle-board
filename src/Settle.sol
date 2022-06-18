@@ -38,7 +38,7 @@ contract Settle is BaseSettleMath, Ownable {
         Config memory config =  tokenSettleConfig[_token];
         return (config.oracleLink, config.numSigned);
     }
-
+    
     function getWalletSettle(address account) external view returns (uint, uint) {
         uint value;
         uint debt;
@@ -58,17 +58,16 @@ contract Settle is BaseSettleMath, Ownable {
                 wallet_token.decimals(),  
                 IPriceOracle(oracleLink).decimals()
             );
-            console.log("settle:", _settle);
             if (numSigned == 1) {
                 value = add_(_settle, value);
             } else {
                 debt = add_(_settle, debt);
             }
         }
-        console.log("getWalletSettle", value, debt);
         return (value, debt);
     }
-   
+    
+    // add a token config to the tokenSettleConfig
     function addSettleToken(address _token, address _priceLink, int8 _numSigned) external onlyOwner returns (bool) {
         require(isTokenExists(_token) == false, "token already exists");
 
@@ -77,7 +76,8 @@ contract Settle is BaseSettleMath, Ownable {
         emit AddSettleToken(msg.sender, _token, _priceLink, _numSigned);
         return true;
     }
-
+    
+    // delete a token from the list
     function delSettleToken(address _token) external onlyOwner returns (bool) {
         require(isTokenExists(_token), "token not found");
 

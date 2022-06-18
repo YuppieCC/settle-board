@@ -1,29 +1,20 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity 0.8.10;
+pragma solidity ^0.8.0;
 
-import "ds-test/console.sol";
-import "ds-test/test.sol";
-import {IERC20} from "../interfaces/IERC20.sol";
-import {IPriceOracle} from "../interfaces/IPriceOracle.sol";
-import {Settle} from "../Settle.sol";
-import {QuickswapOracleFactory} from "../QuickswapOracleFactory.sol";
-import {ExponentialNoError}  from "../lib/ExponentialNoError.sol";
+import 'forge-std/Script.sol';
+import {Settle} from 'src/Settle.sol';
+import {QuickswapOracleFactory} from 'src/QuickswapOracleFactory.sol';
 
 
-contract SettleTest is ExponentialNoError, DSTest {
+contract DeployScript is Script {
     Settle settle;
     QuickswapOracleFactory qsOracleFactory;
-    address public chip = 0xfd29982Fa0b7d3eDcaE9B0c49D350C07c7cEC5c1;
-    address public currency = 0xe19B95fB3bDE006E436c7C83DCb8018D55671490;
-    address public sam = 0x16EAF3c5201F57A9cc0B35688269c082e215627c;
-    address public SYTEST3 = 0xE3052163A213bD13fDB88dCfb00363d808d5DEf1;
-    address public testUser = 0xE3052163A213bD13fDB88dCfb00363d808d5DEf1;
-
+    address public priceWmaticUsdc;
+    address public priceWethUsdc;
+    address public priceWbtcWeth;
+  
     int8 public positiveNumSigned = 1;
     int8 public negativeNumSigned = -1;
-
-    address public mumbaiBTCUSD = 0x007A22900a3B98143368Bd5906f8E17e9867581b;
-    address public mumbaiUSDTUSD = 0x572dDec9087154dC5dfBB1546Bb62713147e0Ab0;
 
     address public WETHUSDC = 0x853Ee4b2A13f8a742d64C8F088bE7bA2131f670d;
     address public WBTCWETH = 0xdC9232E2Df177d7a12FdFf6EcBAb114E2231198D;
@@ -79,8 +70,12 @@ contract SettleTest is ExponentialNoError, DSTest {
     address public aave_debt_weth = 0xeDe17e9d79fc6f9fF9250D9EEfbdB88Cc18038b5;
     address public aave_debt_wmatic = 0x59e8E9100cbfCBCBAdf86b9279fa61526bBB8765;
 
-    function setUp() public {
-        qsOracleFactory = new QuickswapOracleFactory();
+    address public deployedSettle = 0xCde4d3522D80508bD06dbC36A2BAb4c70bf8584A;
+    address public deployedQuickswapOracleFactory = 0x233D03a3B34d3f74F21608E57ACD51350Cff2935;
+
+    function run() external {
+        vm.startBroadcast();
+        qsOracleFactory = QuickswapOracleFactory(deployedQuickswapOracleFactory);
         address priceWmaticUsdc = qsOracleFactory.createOracleFeed("WMATIC-USDC",WMATICUSDC,WMATIC,USDC,WATICUSD,USDCUSD);
         address priceWethUsdc = qsOracleFactory.createOracleFeed("WETH-USDC",WETHUSDC,WETH,USDC,ETHUSD,USDCUSD);
         address priceWbtcWeth = qsOracleFactory.createOracleFeed("WBTC-WETH",WBTCWETH,WBTC,WETH,BTCUSD,ETHUSD);
@@ -89,7 +84,7 @@ contract SettleTest is ExponentialNoError, DSTest {
         address priceWbtcUsdc = qsOracleFactory.createOracleFeed("WBTC-USDC",WBTCUSDC,WBTC,USDC,BTCUSD,USDCUSD);
         address priceWmaticUsdt = qsOracleFactory.createOracleFeed("WMATIC-USDT",WMATICUSDT,WMATIC,USDT,WATICUSD,USDTUSD);
 
-        settle = new Settle();
+        settle = Settle(deployedSettle);
         settle.addSettleToken(WETHUSDC, priceWethUsdc, positiveNumSigned);
         settle.addSettleToken(WBTCWETH, priceWbtcWeth, positiveNumSigned);
         settle.addSettleToken(WMATICUSDC, priceWmaticUsdc, positiveNumSigned);
@@ -118,54 +113,7 @@ contract SettleTest is ExponentialNoError, DSTest {
         settle.addSettleToken(aave_debt_wbtc, BTCUSD, negativeNumSigned);
         settle.addSettleToken(aave_debt_weth, ETHUSD, negativeNumSigned);
         settle.addSettleToken(aave_debt_wmatic, MATICUSD, negativeNumSigned);
-    }
 
-    function testExample() public {
-        assertTrue(true);
-    }
-    
-    function testSettleOwner() public {
-        assertEq(settle.owner(), address(this));
-    }
-
-    function testGetTokenPriceConfig() public {
-        settle.addSettleToken(chip, mumbaiBTCUSD, positiveNumSigned);
-        (address _oracleLink, int8 _numSigned) = settle.getTokenSettleConfig(chip);
-        assertEq(_oracleLink, mumbaiBTCUSD);
-        assertLe(_numSigned, positiveNumSigned);
-    }
-    
-    function testAddSettleToken() public {
-        assertTrue(settle.addSettleToken(chip, mumbaiBTCUSD, positiveNumSigned));
-    }
-
-    function testIsTokenExists() public {
-        assertTrue(settle.addSettleToken(chip, mumbaiBTCUSD, positiveNumSigned));
-        assertTrue(settle.isTokenExists(chip));
-        assertTrue(!settle.isTokenExists(sam));
-    }
-
-    function testGetWalletSettle() public {
-        (uint value, uint debt) = settle.getWalletSettle(testUser);
-        emit log_uint(value);
-        emit log_uint(debt);
-    }
-
-    function testDelSettleToken() public {
-        assertTrue(settle.addSettleToken(chip, mumbaiBTCUSD, positiveNumSigned));
-        assertTrue(settle.delSettleToken(chip));
-        assertTrue(!settle.isTokenExists(chip));
-    }
-
-    function testExponential() public {
-        uint dec = IERC20(WMATIC).balanceOf(sam);
-        Exp memory _res = Exp({mantissa: dec});
-        console.log("exp", _res.mantissa);
-
-        uint _test = truncate(_res);
-        console.log("truncate", _test);
-
-        uint _mul_ScalarTruncate = mul_ScalarTruncate(_res, 2);
-        console.log("mul_ScalarTruncate", _mul_ScalarTruncate);
+        vm.stopBroadcast();
     }
 }

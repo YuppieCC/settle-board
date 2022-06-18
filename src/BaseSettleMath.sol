@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.8.10;
 
-import "ds-test/console.sol";
 import {ExponentialNoError}  from "./lib/ExponentialNoError.sol";
 import {SafeMath} from "./openzepplin/SafeMath.sol";
 
@@ -27,7 +26,6 @@ contract BaseSettleMath is ExponentialNoError {
     ) public view returns (uint) {
         uint _settle = mul_(tokenAmount, tokenPrice);
         uint _valueDecimals = add_(amountDeciamls, priceDecimals);
-
         if (_valueDecimals > decimals) {
             uint diffDecimals = sub_(_valueDecimals, decimals);
             return div_(_settle, 10 ** diffDecimals);

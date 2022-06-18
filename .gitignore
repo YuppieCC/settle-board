@@ -1,6 +1,8 @@
 cache/
 out/
+broadcast/
 
+.vscode
 deploy
 allFiredEvents
 .build-temp
