@@ -12,6 +12,9 @@ test:
 report:
 	forge test --fork-url ${NETWORK_RPC_URL} --gas-report
 
+snapshot:
+	forge snapshot --fork-url ${NETWORK_RPC_URL}
+
 build:
 	forge build
 
