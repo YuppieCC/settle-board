@@ -9,7 +9,12 @@ To make DeFi assets accessible and easy to track.The `settle` Contract can  disp
 > I build a LP-Token Oracle Factory, it can generate an oracle contract for different pools.
 
 [![XOuWXn.png](https://s1.ax1x.com/2022/06/18/XOuWXn.png)](https://imgtu.com/i/XOuWXn)
+## Contracts
 
+Name | Code | Address | Network
+------------ | ------------- | ------------- | -------------
+Settle |[GitHub](https://github.com/YuppieCC/settle-board/blob/master/src/Settle.sol)|[0xCde4d3522D80508bD06dbC36A2BAb4c70bf8584A](https://polygonscan.com/address/0xCde4d3522D80508bD06dbC36A2BAb4c70bf8584A) | Polygon
+QuickswapOracleFactory |[GitHub](https://github.com/YuppieCC/settle-board/blob/master/src/QuickswapOracleFactory.sol) | [0x233D03a3B34d3f74F21608E57ACD51350Cff2935](https://polygonscan.com/address/0x233D03a3B34d3f74F21608E57ACD51350Cff2935) | Polygon
 ## Usage
 When all contracts have been deployed, you can set the token allowlist, and call the `getWalletSettle()` method to fetch the `networth` and `debt`.
 ```solidity
@@ -20,14 +25,6 @@ settle.addSettleToken(
 );
 (uint value, uint debt) = settle.getWalletSettle(<yourAccountAddress>);
 ```
-
-## Contracts
-
-Name | Code | Address | Network
------------- | ------------- | ------------- | -------------
-Settle |[GitHub](https://github.com/YuppieCC/settle-board/blob/master/src/Settle.sol)|[0xCde4d3522D80508bD06dbC36A2BAb4c70bf8584A](https://polygonscan.com/address/0xCde4d3522D80508bD06dbC36A2BAb4c70bf8584A) | Polygon
-QuickswapOracleFactory |[GitHub](https://github.com/YuppieCC/settle-board/blob/master/src/QuickswapOracleFactory.sol) | [0x233D03a3B34d3f74F21608E57ACD51350Cff2935](https://polygonscan.com/address/0x233D03a3B34d3f74F21608E57ACD51350Cff2935) | Polygon
-
 ## Development
 
 ```Shell
